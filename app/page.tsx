@@ -1,124 +1,214 @@
+"use client";
+import { SplineViewer } from "@/components/Threed";
 import Image from "next/image";
-
-interface Profile {
-  id: number;
-  name: string;
-  age: number;
-  bio: string;
-  imageUrl: string;
-  distance: string;
-}
-
-// Mock data - in a real app this would come from an API
-const mockProfiles: Profile[] = [
-  {
-    id: 1,
-    name: "Sarah",
-    age: 28,
-    bio: "Adventure seeker and coffee enthusiast. Let's explore the city together!",
-    imageUrl: "https://placekitten.com/400/600", // Placeholder image
-    distance: "2 miles away",
-  },
-  // Add more mock profiles as needed
-];
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { useState } from "react";
+import { motion } from "motion/react";
+import { RainbowButton } from "@/components/ui/rainbow-button";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const router = useRouter();
+  useGSAP(() => {
+    if (isLoaded) {
+      // Animate out loader
+      gsap.fromTo(
+        ".loader",
+        {
+          yPercent: 0,
+        },
+        {
+          yPercent: -100,
+          duration: 0.8,
+          ease: "power3.inOut",
+          onComplete: () => {
+            gsap.set(".loader", { display: "none" });
+          },
+        }
+      );
+
+      // Animate in hero title
+      gsap.fromTo(
+        ".hero-title",
+        {
+          opacity: 0,
+          y: 100,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: "power4.out",
+          delay: 0.5,
+        }
+      );
+    }
+  }, [isLoaded]);
+
   return (
-    <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-rose-50 to-rose-100 p-4">
-      {/* Top Navigation */}
-      <nav className="w-full max-w-md flex justify-between items-center p-4 bg-white rounded-lg shadow-sm mb-6">
-        <button className="text-gray-600 hover:text-rose-500">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
-        <h1 className="text-2xl font-bold text-rose-500">DateMe</h1>
-        <button className="text-gray-600 hover:text-rose-500">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
-        </button>
-      </nav>
-
-      {/* Profile Card */}
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="relative h-[500px]">
-          <Image
-            src={mockProfiles[0].imageUrl}
-            alt={mockProfiles[0].name}
-            fill
-            style={{ objectFit: "cover" }}
-            className="rounded-t-xl"
-          />
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white">
-            <h2 className="text-2xl font-bold">
-              {mockProfiles[0].name}, {mockProfiles[0].age}
-            </h2>
-            <p className="text-sm">{mockProfiles[0].distance}</p>
-          </div>
-        </div>
-        <div className="p-4">
-          <p className="text-gray-700">{mockProfiles[0].bio}</p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-4 p-4 border-t border-gray-100">
-          <button className="w-14 h-14 flex items-center justify-center rounded-full bg-white border border-gray-300 shadow-sm hover:border-red-400 transition-colors">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8 text-red-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-          <button className="w-14 h-14 flex items-center justify-center rounded-full bg-white border border-gray-300 shadow-sm hover:border-green-400 transition-colors">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8 text-green-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </button>
-        </div>
+    <>
+      <div className="loader absolute top-0 left-0 w-full h-full bg-background z-20 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
-    </main>
+      <main className="relative min-h-screen w-full flex flex-col items-center justify-between bg-background font-newKansasLight overflow-hidden">
+        <header className="absolute inset-0 w-full h-full">
+          <div className="h-full w-full relative">
+            <SplineViewer
+              eventsTarget="global"
+              onSplineLoad={() => {
+                setTimeout(() => setIsLoaded(true), 500);
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black z-[5]"></div>
+          </div>
+        </header>
+        <div className="absolute flex flex-col items-center justify-center gap-8 z-10 bottom-24">
+          <h1 className="hero-title mb-24 relative text-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl leading-tight px-4 font-displayRegular text-foreground">
+            Polka Buddies
+          </h1>
+          <RainbowButton onClick={() => router.push("/login")}>
+            Let's connect with friends
+          </RainbowButton>
+        </div>
+      </main>
+      {isLoaded && (
+        <section className="max-w-screen-xl mx-auto min-h-screen bg-black relative">
+          <div className="container mx-auto px-4 py-24">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="bg-card p-8 rounded-lg shadow-lg"
+              >
+                <h3 className="text-2xl font-newKansasMedium text-foreground mb-4">
+                  Find Your People
+                </h3>
+                <p className="text-muted-foreground">
+                  Connect with like-minded individuals who share your interests,
+                  hobbies and passions. Our matching algorithm helps you find
+                  your perfect friend match.
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="bg-card p-8 rounded-lg shadow-lg md:row-span-2"
+              >
+                <h3 className="text-2xl font-newKansasMedium text-foreground mb-4">
+                  Safe & Secure
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  Your safety is our top priority. All users are verified and
+                  our platform includes robust reporting and blocking features.
+                </p>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-primary"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-foreground">ID Verification</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-primary"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-foreground">24/7 Monitoring</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="bg-card p-8 rounded-lg shadow-lg"
+              >
+                <h3 className="text-2xl font-newKansasMedium text-foreground mb-4">
+                  Group Activities
+                </h3>
+                <p className="text-muted-foreground">
+                  Join virtual and local meetups, game nights, book clubs and
+                  more. Making friends is more fun in groups!
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="bg-card p-8 rounded-lg shadow-lg"
+              >
+                <h3 className="text-2xl font-newKansasMedium text-foreground mb-4">
+                  Chat & Connect
+                </h3>
+                <p className="text-muted-foreground">
+                  Start conversations through text, voice, or video chat.
+                  Express yourself with GIFs, stickers and emoji reactions.
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="bg-card p-8 rounded-lg shadow-lg"
+              >
+                <h3 className="text-2xl font-newKansasMedium text-foreground mb-4">
+                  Interest Matching
+                </h3>
+                <p className="text-muted-foreground">
+                  From gaming to gardening, find friends who love what you love.
+                  Connect through shared interests and activities.
+                </p>
+              </motion.div>
+            </div>
+          </div>
+          <footer className="w-full bg-black">
+            <div className="container mx-auto px-4 py-8">
+              <p className="text-muted-foreground">
+                &copy; {new Date().getFullYear()} Polka Buddies. All rights
+                reserved.
+              </p>
+            </div>
+          </footer>
+        </section>
+      )}
+    </>
   );
 }

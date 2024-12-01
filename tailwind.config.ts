@@ -1,14 +1,21 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-    darkMode: ["class"],
-    content: [
+  darkMode: ["class"],
+  content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			newKansas: ["var(--font-new-kansas-regular)"],
+  			newKansasLight: ["var(--font-new-kansas-light)"],
+  			newKansasMedium: ["var(--font-new-kansas-medium)"],
+  			displayLight: ["var(--font-new-kansas-extra-swash-light-italic)"],
+  			displayRegular: ["var(--font-new-kansas-extra-swash-regular-italic)"]
+  		},
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
   			'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
@@ -58,6 +65,24 @@ const config: Config = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
+  			},
+  			'color-1': 'hsl(var(--color-1))',
+  			'color-2': 'hsl(var(--color-2))',
+  			'color-3': 'hsl(var(--color-3))',
+  			'color-4': 'hsl(var(--color-4))',
+  			'color-5': 'hsl(var(--color-5))'
+  		},
+  		animation: {
+  			rainbow: 'rainbow var(--speed, 2s) infinite linear'
+  		},
+  		keyframes: {
+  			rainbow: {
+  				'0%': {
+  					'background-position': '0%'
+  				},
+  				'100%': {
+  					'background-position': '200%'
+  				}
   			}
   		}
   	}

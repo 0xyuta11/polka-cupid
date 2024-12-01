@@ -1,8 +1,39 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
+
+const newKansasLight = localFont({
+  src: "./fonts/NewKansas-Light.woff",
+  display: "swap",
+  variable: "--font-new-kansas-light",
+});
+
+const newKansasMedium = localFont({
+  src: "./fonts/NewKansas-Medium.woff",
+  display: "swap",
+  variable: "--font-new-kansas-medium",
+});
+
+const newKansasRegular = localFont({
+  src: "./fonts/NewKansas-Regular.woff",
+  display: "swap",
+  variable: "--font-new-kansas-regular",
+});
+
+const newKansasExtraSwashLightItalic = localFont({
+  src: "./fonts/NewKansasExtraSwash-LightItalic.woff",
+  display: "swap",
+  variable: "--font-new-kansas-extra-swash-light-italic",
+});
+
+const newKansasExtraSwashRegularItalic = localFont({
+  src: "./fonts/NewKansasExtraSwash-RegularItalic.woff",
+  display: "swap",
+  variable: "--font-new-kansas-extra-swash-regular-italic",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,8 +46,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html
+      suppressHydrationWarning
+      className={` dark ${newKansasLight.variable} ${newKansasMedium.variable} ${newKansasRegular.variable} ${newKansasExtraSwashLightItalic.variable} ${newKansasExtraSwashRegularItalic.variable}`}
+      lang="en"
+    >
+      <body className={`${inter.className} bg-black`}>{children}</body>
     </html>
   );
 }
