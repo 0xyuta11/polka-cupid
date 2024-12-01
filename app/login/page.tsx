@@ -1,5 +1,8 @@
 "use client";
 
+import InfoDialog from "@/components/infodialog";
+import SignInForm from "@/components/SignInform";
+import SignUpForm from "@/components/SignUpform";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 
@@ -23,44 +26,7 @@ export default function Login() {
                 Welcome Back
               </h1>
 
-              <form className="space-y-4">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="email"
-                    className="text-sm font-newKansasRegular text-foreground"
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    className="w-full px-4 py-2 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Enter your email"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-newKansasRegular text-foreground"
-                  >
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    className="w-full px-4 py-2 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Enter your password"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity font-newKansasMedium"
-                >
-                  Sign In
-                </button>
-              </form>
+              <SignInForm />
 
               <p className="text-sm text-center text-muted-foreground">
                 Don't have an account?{" "}
@@ -85,59 +51,7 @@ export default function Login() {
                 Create Account
               </h1>
 
-              <form className="space-y-4">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="name"
-                    className="text-sm font-newKansasRegular text-foreground"
-                  >
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="w-full px-4 py-2 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="signup-email"
-                    className="text-sm font-newKansasRegular text-foreground"
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="signup-email"
-                    className="w-full px-4 py-2 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Enter your email"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label
-                    htmlFor="signup-password"
-                    className="text-sm font-newKansasRegular text-foreground"
-                  >
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    id="signup-password"
-                    className="w-full px-4 py-2 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Create a password"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity font-newKansasMedium"
-                >
-                  Sign Up
-                </button>
-              </form>
+              <SignUpForm />
 
               <p className="text-sm text-center text-muted-foreground">
                 Already have an account?{" "}
@@ -151,6 +65,13 @@ export default function Login() {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+      <div className="fixed bottom-4 right-4">
+        <InfoDialog
+          message="Skip this page"
+          link="/onboarding"
+          linkText="Onboarding"
+        />
       </div>
     </main>
   );
