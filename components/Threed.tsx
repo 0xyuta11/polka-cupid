@@ -66,7 +66,7 @@ const SplineViewer: React.FC<SplineViewerProps> = ({
       script.addEventListener("load", initializeViewer);
       return () => script.removeEventListener("load", initializeViewer);
     }
-  }, [url, eventsTarget, isMounted]);
+  }, [url, eventsTarget, isMounted, onSplineLoad]);
 
   return <div ref={viewerRef} />;
 };

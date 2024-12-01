@@ -70,7 +70,7 @@ export default function Home() {
             Polka Buddies
           </h1>
           <RainbowButton onClick={() => router.push("/login")}>
-            Let's connect with friends
+            Let&#39;s connect with friends
           </RainbowButton>
         </div>
       </main>

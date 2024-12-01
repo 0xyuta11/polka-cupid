@@ -29,7 +29,7 @@ export default function Login() {
               <SignInForm />
 
               <p className="text-sm text-center text-muted-foreground">
-                Don't have an account?{" "}
+                Don&#39;t have an account?{" "}
                 <button
                   onClick={() => setShowSignUp(true)}
                   className="text-primary hover:underline"
