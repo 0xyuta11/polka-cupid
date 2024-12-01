@@ -95,3 +95,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* smooth scroll */
+html {
+  scroll-behavior: smooth;
+}

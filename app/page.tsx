@@ -7,6 +7,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { useRouter } from "next/navigation";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -48,7 +49,7 @@ export default function Home() {
   }, [isLoaded]);
 
   return (
-    <>
+    <ScrollArea className="h-screen">
       <div className="loader absolute top-0 left-0 w-full h-full bg-background z-20 flex items-center justify-center">
         <div className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
@@ -209,6 +210,6 @@ export default function Home() {
           </footer>
         </section>
       )}
-    </>
+    </ScrollArea>
   );
 }
