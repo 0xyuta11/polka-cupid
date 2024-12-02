@@ -5,7 +5,7 @@ import PasswordInput from "./passwordinput";
 
 import { createAuthClient } from "better-auth/react";
 import { useState } from "react";
-import { useRouter } from "next/dist/client/router";
+import { useRouter } from "next/router";
 
 export default function SignUpForm() {
   const client = createAuthClient({});
