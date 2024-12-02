@@ -17,13 +17,13 @@ export default async function authMiddleware(request: NextRequest) {
   if (!session) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-//   if (request.nextUrl.pathname === "/login") {
-//     return NextResponse.redirect(new URL("/dashboard", request.url));
-//   }
+  //   if (request.nextUrl.pathname === "/login") {
+  //     return NextResponse.redirect(new URL("/dashboard", request.url));
+  //   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard", "/onboarding", "/login"],
+  matcher: ["/dashboard", "/onboarding", "/profile"],
 };
