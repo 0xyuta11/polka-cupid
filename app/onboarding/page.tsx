@@ -1,283 +1,377 @@
 "use client";
 
-// Import necessary components and hooks
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronUp, ChevronDown } from "lucide-react";
-import { useCharacterLimit } from "@/hooks/use-character-limit";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import gsap from "gsap";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import InfoDialog from "@/components/infodialog";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { PlusCircle } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Define question type and structure
-type Question = {
-  id: number;
-  type: "text" | "textarea" | "select" | "multiselect";
-  question: string;
-  placeholder?: string;
-  options?: string[];
-  required: boolean;
-};
+interface Trait {
+  emoji: string;
+  label: string;
+  category: "creativity" | "interests" | "sports" | "personality";
+}
 
-// Define questions array with all onboarding questions
-const questions: Question[] = [
-  {
-    id: 1,
-    type: "text",
-    question: "What's your name?",
-    placeholder: "Enter your full name",
-    required: true,
-  },
-  {
-    id: 2,
-    type: "textarea",
-    question: "Tell us about yourself",
-    placeholder: "Share a brief introduction...",
-    required: true,
-  },
-  {
-    id: 3,
-    type: "select",
-    question: "What's your role?",
-    options: ["Developer", "Designer", "Product Manager", "Other"],
-    required: true,
-  },
-  {
-    id: 4,
-    type: "multiselect",
-    question: "What are your interests?",
-    options: ["Frontend", "Backend", "Mobile", "AI/ML", "DevOps", "UI/UX"],
-    required: false,
-  },
-  {
-    id: 5,
-    type: "text",
-    question: "What's your favorite color?",
-    placeholder: "Enter your favorite color",
-    required: false,
-  },
+interface UserData {
+  age: string;
+  gender: string;
+  selectedTraits: Trait[];
+  wantedTraits: Trait[];
+}
+
+const creativityTraits: Trait[] = [
+  { emoji: "🎨", label: "Art", category: "creativity" },
+  { emoji: "📸", label: "Photography", category: "creativity" },
+  { emoji: "💃", label: "Dance", category: "creativity" },
+  { emoji: "🎵", label: "Music", category: "creativity" },
+  { emoji: "⭐", label: "Puzzles", category: "creativity" },
 ];
 
-export default function Onboarding() {
-  // State management for current question, answers and character limit
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
-  const {
-    value,
-    characterCount,
-    handleChange,
-    maxLength: limit,
-  } = useCharacterLimit({ maxLength: 180 });
+const interestTraits: Trait[] = [
+  { emoji: "👨‍💻", label: "Hackathons", category: "interests" },
+  { emoji: "🎬", label: "Movies", category: "interests" },
+  { emoji: "⛓️", label: "Blockchain", category: "interests" },
+];
 
-  // Handle navigation between questions
-  const handleNext = () => {
-    const currentAnswer = answers[questions[currentQuestion].id];
-    const isAnswerEmpty =
-      !currentAnswer ||
-      (Array.isArray(currentAnswer) && currentAnswer.length === 0);
+const sportsTraits: Trait[] = [
+  { emoji: "🏀", label: "Basketball", category: "sports" },
+  { emoji: "⚽", label: "Football", category: "sports" },
+  { emoji: "🏏", label: "Cricket", category: "sports" },
+  { emoji: "♟️", label: "Chess", category: "sports" },
+  { emoji: "🔴", label: "Carrom", category: "sports" },
+];
 
-    if (questions[currentQuestion].required && isAnswerEmpty) {
-      return; // Don't proceed if required field is empty
-    }
+const personalityTraits: Trait[] = [
+  { emoji: "🥺", label: "Weeb", category: "personality" },
+  { emoji: "🎮", label: "Gamer", category: "personality" },
+  { emoji: "😋", label: "Foodie", category: "personality" },
+  { emoji: "🌍", label: "Traveler", category: "personality" },
+  { emoji: "📚", label: "Bookworm", category: "personality" },
+  { emoji: "😄", label: "Humourous", category: "personality" },
+  { emoji: "🏳️‍🌈", label: "LGBTQ+", category: "personality" },
+];
 
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
+export default function SelectTraitsPage() {
+  const router = useRouter();
+  const containerRef = useRef(null);
+  const [userData, setUserData] = useState<UserData>({
+    age: "23",
+    gender: "Female",
+    selectedTraits: [],
+    wantedTraits: [],
+  });
+  const [newTrait, setNewTrait] = useState<Trait>({
+    emoji: "😊",
+    label: "",
+    category: "creativity",
+  });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("what-you-are");
+
+  useEffect(() => {
+    gsap.fromTo(
+      containerRef.current,
+      {
+        duration: 1,
+        y: 30,
+        opacity: 0,
+        ease: "power3.out",
+      },
+      {
+        y: 0,
+        opacity: 1,
+      }
+    );
+  }, []);
+
+  const toggleTrait = (trait: Trait) => {
+    setUserData((prev) => {
+      const traitList =
+        activeTab === "what-you-are" ? "selectedTraits" : "wantedTraits";
+      const isSelected = prev[traitList].some((t) => t.label === trait.label);
+
+      if (isSelected) {
+        return {
+          ...prev,
+          [traitList]: prev[traitList].filter((t) => t.label !== trait.label),
+        };
+      } else {
+        return {
+          ...prev,
+          [traitList]: [...prev[traitList], trait],
+        };
+      }
+    });
+  };
+
+  const TraitButton = ({ emoji, label, category }: Trait) => {
+    const buttonRef = useRef(null);
+    const traitList =
+      activeTab === "what-you-are" ? "selectedTraits" : "wantedTraits";
+    const isSelected = userData[traitList].some((t) => t.label === label);
+
+    const handleClick = () => {
+      gsap.to(buttonRef.current, {
+        scale: 0.95,
+        duration: 0.1,
+        yoyo: true,
+        repeat: 1,
+      });
+      toggleTrait({ emoji, label, category });
+    };
+
+    return (
+      <Button
+        ref={buttonRef}
+        variant={isSelected ? "default" : "outline"}
+        className={`rounded-full transition-all ${
+          isSelected
+            ? "bg-purple-600 hover:bg-purple-700 text-white"
+            : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        }`}
+        onClick={handleClick}
+      >
+        <span className="mr-2">{emoji}</span>
+        {label}
+      </Button>
+    );
+  };
+
+  const handleSubmit = async () => {
+    router.push("/dashboard");
+    // try {
+    //   const response = await fetch("/api/traits", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(userData),
+    //   });
+
+    //   if (!response.ok) {
+    //     throw new Error("Failed to save traits");
+    //   }
+
+    //   console.log("Traits saved successfully!");
+    // } catch (error) {
+    //   console.error("Error saving traits:", error);
+    // }
+  };
+
+  const addCustomTrait = () => {
+    if (newTrait.label.trim()) {
+      setUserData((prev) => ({
+        ...prev,
+        selectedTraits: [...prev.selectedTraits, newTrait],
+      }));
+      setNewTrait({
+        emoji: "😊",
+        label: "",
+        category: "creativity",
+      });
+      setIsDialogOpen(false);
     }
   };
 
-  const handlePrevious = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion((prev) => prev - 1);
-    }
-  };
-
-  // Handle answer updates
-  const handleAnswer = (value: string | string[]) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questions[currentQuestion].id]: value,
-    }));
-  };
-
-  // Render different input types based on question type
-  const renderInput = () => {
-    const question = questions[currentQuestion];
-
-    switch (question.type) {
-      // Text input component
-      case "text":
-        return (
-          <Input
-            placeholder={question.placeholder}
-            value={answers[question.id] || ""}
-            onChange={(e) => handleAnswer(e.target.value)}
-            className="max-w-md"
-          />
-        );
-
-      // Textarea component with character limit
-      case "textarea":
-        return (
-          <>
-            <Textarea
-              id="textarea-16"
-              rows={5}
-              placeholder={question.placeholder}
-              value={answers[question.id] || ""}
-              maxLength={180}
-              onChange={(e) => handleAnswer(e.target.value)}
-              aria-describedby="characters-left-textarea"
+  const AddTraitDialog = () => (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          className="rounded-full border-dashed border-2"
+        >
+          <PlusCircle className="w-4 h-4 mr-2" />
+          Add Custom Trait
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add Custom Trait</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-4">
+          <div>
+            <label className="text-sm text-zinc-500">Emoji</label>
+            <Input
+              value={newTrait.emoji}
+              onChange={(e) =>
+                setNewTrait((prev) => ({ ...prev, emoji: e.target.value }))
+              }
+              placeholder="Choose an emoji"
             />
-            <p
-              id="characters-left-textarea"
-              className="mt-2 text-right text-xs text-muted-foreground"
-              role="status"
-              aria-live="polite"
-            >
-              <span className="tabular-nums">{limit - characterCount}</span>{" "}
-              characters left
-            </p>
-          </>
-        );
-
-      // Select dropdown component
-      case "select":
-        return (
-          <Select
-            value={(answers[question.id] as string) || ""}
-            onValueChange={(value) => handleAnswer(value)}
-          >
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue placeholder="Select an option" />
-            </SelectTrigger>
-            <SelectContent>
-              {question.options?.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        );
-
-      // Multi-select checkbox component
-      case "multiselect":
-        return (
-          <div className="space-y-2">
-            {question.options?.map((option) => (
-              <div key={option} className="flex items-center space-x-2">
-                <Checkbox
-                  id={option}
-                  checked={(answers[question.id] || []).includes(option)}
-                  onCheckedChange={(checked) => {
-                    const currentAnswers =
-                      (answers[question.id] as string[]) || [];
-                    if (checked) {
-                      handleAnswer([...currentAnswers, option]);
-                    } else {
-                      handleAnswer(
-                        currentAnswers.filter((item) => item !== option)
-                      );
-                    }
-                  }}
-                />
-                <Label htmlFor={option}>{option}</Label>
-              </div>
-            ))}
           </div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    // Main container with responsive padding and centering
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6 md:p-8 overflow-hidden">
-      <div className="w-full max-w-2xl mx-auto">
-        {/* Progress Bar - Shows current question progress */}
-        <div className="flex gap-1 mb-12 md:mb-24 px-4">
-          {questions.map((_, index) => (
-            <div
-              key={index}
-              className="relative h-0.5 md:h-1 flex-1 rounded-full bg-muted overflow-hidden"
+          <div>
+            <label className="text-sm text-zinc-500">Label</label>
+            <Input
+              value={newTrait.label}
+              onChange={(e) =>
+                setNewTrait((prev) => ({ ...prev, label: e.target.value }))
+              }
+              placeholder="Enter trait name"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-zinc-500">Category</label>
+            <select
+              className="w-full rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2"
+              value={newTrait.category}
+              onChange={(e) =>
+                setNewTrait((prev) => ({
+                  ...prev,
+                  category: e.target.value as Trait["category"],
+                }))
+              }
             >
-              <motion.div
-                className="absolute inset-0 bg-primary"
-                initial={false}
-                animate={{
-                  scaleX: index === currentQuestion ? 1 : 0,
-                  originX: 0,
-                }}
-                transition={{
-                  duration: 0.2,
-                  ease: "easeInOut",
-                }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Question Container with Animation */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentQuestion}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-8 overflow-y-auto max-h-[60vh] sm:max-h-[70vh] md:max-h-[80vh] min-h-[300px] sm:min-h-[350px] md:min-h-[400px]"
+              <option value="creativity">Creativity</option>
+              <option value="interests">Interests</option>
+              <option value="sports">Sports</option>
+              <option value="personality">Personality</option>
+            </select>
+          </div>
+          <Button
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+            onClick={addCustomTrait}
           >
-            {/* Question Title and Input Area */}
-            <div className="space-y-4 px-4">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-newKansasMedium">
-                {questions[currentQuestion].question}
-                {questions[currentQuestion].required && (
-                  <span className="text-red-500 ml-1">*</span>
-                )}
-              </h2>
-              {renderInput()}
-            </div>
+            Add Trait
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
-            {/* Navigation Buttons */}
-            <div className="flex justify-end gap-2 px-4 mt-auto">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentQuestion === 0}
-                className="p-2 sm:p-3"
-              >
-                <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleNext}
-                disabled={currentQuestion === questions.length - 1}
-                className="p-2 sm:p-3"
-              >
-                <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-      <div className="fixed bottom-4 right-4">
-        <InfoDialog
-          message="Skip this page"
-          link="/dashboard"
-          linkText="Dashboard"
-        />
+  const TraitSection = ({
+    title,
+    traits,
+    category,
+  }: {
+    title: string;
+    traits: Trait[];
+    category: Trait["category"];
+  }) => (
+    <div>
+      <label className="text-sm text-zinc-500">{title}</label>
+      <div className="flex flex-wrap gap-2 mt-2">
+        {traits.map((trait) => (
+          <TraitButton key={trait.label} {...trait} />
+        ))}
+        {/* Add custom traits that match this category */}
+        {userData.selectedTraits
+          .filter(
+            (trait) =>
+              trait.category === category &&
+              !traits.some((t) => t.label === trait.label)
+          )
+          .map((trait) => (
+            <TraitButton key={trait.label} {...trait} />
+          ))}
+        {category === "creativity" && <AddTraitDialog />}
       </div>
     </div>
+  );
+
+  return (
+    <ScrollArea className="h-screen w-screen flex items-center justify-center">
+      <div className="h-screen max-w-5xl bg-white dark:bg-black p-4 md:p-8 flex items-start justify-center mx-auto">
+        <div ref={containerRef} className="space-y-6 md:space-y-8">
+          <div className="text-center">
+            <h1 className="text-xl md:text-2xl font-bold">
+              Everyone is <span className="text-purple-600">Unique</span>, so
+              are you!
+            </h1>
+          </div>
+
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="what-you-are">What you are</TabsTrigger>
+              <TabsTrigger value="what-you-want">What you want</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <div className="space-y-4">
+            {activeTab === "what-you-are" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-zinc-500">Age:</label>
+                  <Input
+                    type="number"
+                    value={userData.age}
+                    onChange={(e) =>
+                      setUserData((prev) => ({ ...prev, age: e.target.value }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-zinc-500">Gender:</label>
+                  <select
+                    className="w-full rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2"
+                    value={userData.gender}
+                    onChange={(e) =>
+                      setUserData((prev) => ({
+                        ...prev,
+                        gender: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Non-binary">Non-binary</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-6">
+              <TraitSection
+                title="Creativity"
+                traits={creativityTraits}
+                category="creativity"
+              />
+              <TraitSection
+                title="Interests"
+                traits={interestTraits}
+                category="interests"
+              />
+              <TraitSection
+                title="Sports"
+                traits={sportsTraits}
+                category="sports"
+              />
+              <TraitSection
+                title="Personality"
+                traits={personalityTraits}
+                category="personality"
+              />
+            </div>
+          </div>
+
+          <Button
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+            onClick={handleSubmit}
+          >
+            Next
+          </Button>
+
+          <div className="text-sm text-zinc-500 text-center">
+            {activeTab === "what-you-are"
+              ? `Selected traits: ${userData.selectedTraits.length}`
+              : `Wanted traits: ${userData.wantedTraits.length}`}
+          </div>
+        </div>
+      </div>
+    </ScrollArea>
   );
 }

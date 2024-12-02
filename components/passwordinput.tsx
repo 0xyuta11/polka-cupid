@@ -5,8 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Check, Eye, EyeOff, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
-export default function PasswordInput() {
-  const [password, setPassword] = useState("");
+export default function PasswordInput({
+  password,
+  onChange,
+  required,
+}: {
+  password: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
+}) {
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
   const toggleVisibility = () => setIsVisible((prevState) => !prevState);
@@ -61,9 +68,10 @@ export default function PasswordInput() {
             placeholder="Password"
             type={isVisible ? "text" : "password"}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={onChange}
             aria-invalid={strengthScore < 4}
             aria-describedby="password-strength"
+            required={required}
           />
           <button
             className="absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
