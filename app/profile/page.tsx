@@ -108,12 +108,14 @@ export default function ProfilePage() {
   const verifyHandle = (index: number) => {
     // redirect to https://socialkyc.io in new tab
     window.open("https://socialkyc.io", "_blank");
-    const updatedHandles = [...editedData.socialHandles];
-    updatedHandles[index] = {
-      ...updatedHandles[index],
-      isVerified: true,
-    };
-    setEditedData((prev) => ({ ...prev, socialHandles: updatedHandles }));
+    setTimeout(() => {
+      const updatedHandles = [...editedData.socialHandles];
+      updatedHandles[index] = {
+        ...updatedHandles[index],
+        isVerified: true,
+      };
+      setEditedData((prev) => ({ ...prev, socialHandles: updatedHandles }));
+    }, 2000);
   };
 
   const getSocialIcon = (platform: string) => {
