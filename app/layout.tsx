@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -52,7 +53,10 @@ export default function RootLayout({
       className={` dark ${newKansasLight.variable} ${newKansasMedium.variable} ${newKansasRegular.variable} ${newKansasExtraSwashLightItalic.variable} ${newKansasExtraSwashRegularItalic.variable}`}
       lang="en"
     >
-      <body className={`${inter.className} bg-black`}>{children}</body>
+      <body className={`${inter.className} bg-black`}>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

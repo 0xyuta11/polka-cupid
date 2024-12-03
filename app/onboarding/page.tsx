@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CoolMode } from "@/components/ui/cool-mode";
 
 interface Trait {
   emoji: string;
@@ -131,19 +132,17 @@ export default function SelectTraitsPage() {
     };
 
     return (
-      <Button
-        ref={buttonRef}
-        variant={isSelected ? "default" : "outline"}
-        className={`rounded-full transition-all ${
-          isSelected
-            ? "bg-purple-600 hover:bg-purple-700 text-white"
-            : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
-        }`}
-        onClick={handleClick}
-      >
-        <span className="mr-2">{emoji}</span>
-        {label}
-      </Button>
+      <CoolMode>
+        <Button
+          ref={buttonRef}
+          variant={isSelected ? "default" : "outline"}
+          className="rounded-full transition-all"
+          onClick={handleClick}
+        >
+          <span className="mr-2">{emoji}</span>
+          {label}
+        </Button>
+      </CoolMode>
     );
   };
 
@@ -279,11 +278,11 @@ export default function SelectTraitsPage() {
   );
 
   return (
-    <ScrollArea className="h-screen w-screen flex items-center justify-center">
+    <ScrollArea className="h-screen w-screen flex items-center justify-center font-newKansasMedium">
       <div className="h-screen max-w-5xl bg-white dark:bg-black p-4 md:p-8 flex items-start justify-center mx-auto">
         <div ref={containerRef} className="space-y-6 md:space-y-8">
           <div className="text-center">
-            <h1 className="text-xl md:text-2xl font-bold">
+            <h1 className="text-xl md:text-2xl font-bold font-displayRegular">
               Everyone is <span className="text-purple-600">Unique</span>, so
               are you!
             </h1>
@@ -309,7 +308,10 @@ export default function SelectTraitsPage() {
                     type="number"
                     value={userData.age}
                     onChange={(e) =>
-                      setUserData((prev) => ({ ...prev, age: e.target.value }))
+                      setUserData((prev) => ({
+                        ...prev,
+                        age: e.target.value,
+                      }))
                     }
                   />
                 </div>
@@ -358,10 +360,7 @@ export default function SelectTraitsPage() {
             </div>
           </div>
 
-          <Button
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-            onClick={handleSubmit}
-          >
+          <Button className="w-full" onClick={handleSubmit}>
             Next
           </Button>
 

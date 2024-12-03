@@ -14,16 +14,20 @@ export default async function authMiddleware(request: NextRequest) {
     }
   );
 
+  if (request.nextUrl.pathname === "/login") {
+    if (session) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
+
   if (!session) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  //   if (request.nextUrl.pathname === "/login") {
-  //     return NextResponse.redirect(new URL("/dashboard", request.url));
-  //   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard", "/onboarding", "/profile"],
+  matcher: ["/dashboard", "/onboarding", "/profile", "/login"],
 };

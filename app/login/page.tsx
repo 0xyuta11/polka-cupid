@@ -1,5 +1,7 @@
 "use client";
 
+import SignIn from "@/components/BetterSignIn";
+import { SignUp } from "@/components/BetterSignUp";
 import InfoDialog from "@/components/infodialog";
 import SignInForm from "@/components/SignInform";
 import SignUpForm from "@/components/SignUpform";
@@ -26,7 +28,7 @@ export default function Login() {
                 Welcome Back
               </h1>
 
-              <SignInForm />
+              <SignIn />
 
               <p className="text-sm text-center text-muted-foreground">
                 Don&#39;t have an account?{" "}
@@ -51,7 +53,7 @@ export default function Login() {
                 Create Account
               </h1>
 
-              <SignUpForm />
+              <SignUp />
 
               <p className="text-sm text-center text-muted-foreground">
                 Already have an account?{" "}

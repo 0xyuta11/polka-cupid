@@ -1,77 +1,60 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+			
+export const user = pgTable("user", {
+					id: text("id").primaryKey(),
+					name: text('name').notNull(),
+ email: text('email').notNull().unique(),
+ emailVerified: boolean('emailVerified').notNull(),
+ image: text('image'),
+ createdAt: timestamp('createdAt').notNull(),
+ updatedAt: timestamp('updatedAt').notNull()
+				});
 
-export const user = sqliteTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: integer("emailVerified", {
-    mode: "boolean",
-  }).notNull(),
-  image: text("image"),
-  createdAt: integer("createdAt", {
-    mode: "timestamp",
-  }).notNull(),
-  updatedAt: integer("updatedAt", {
-    mode: "timestamp",
-  }).notNull(),
-});
+export const session = pgTable("session", {
+					id: text("id").primaryKey(),
+					expiresAt: timestamp('expiresAt').notNull(),
+ token: text('token').notNull().unique(),
+ createdAt: timestamp('createdAt').notNull(),
+ updatedAt: timestamp('updatedAt').notNull(),
+ ipAddress: text('ipAddress'),
+ userAgent: text('userAgent'),
+ userId: text('userId').notNull().references(()=> user.id)
+				});
 
-export const session = sqliteTable("session", {
-  id: text("id").primaryKey(),
-  expiresAt: integer("expiresAt", {
-    mode: "timestamp",
-  }).notNull(),
-  token: text("token").notNull().unique(),
-  createdAt: integer("createdAt", {
-    mode: "timestamp",
-  }).notNull(),
-  updatedAt: integer("updatedAt", {
-    mode: "timestamp",
-  }).notNull(),
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  userId: text("userId")
-    .notNull()
-    .references(() => user.id),
-});
+export const account = pgTable("account", {
+					id: text("id").primaryKey(),
+					accountId: text('accountId').notNull(),
+ providerId: text('providerId').notNull(),
+ userId: text('userId').notNull().references(()=> user.id),
+ accessToken: text('accessToken'),
+ refreshToken: text('refreshToken'),
+ idToken: text('idToken'),
+ accessTokenExpiresAt: timestamp('accessTokenExpiresAt'),
+ refreshTokenExpiresAt: timestamp('refreshTokenExpiresAt'),
+ scope: text('scope'),
+ password: text('password'),
+ createdAt: timestamp('createdAt').notNull(),
+ updatedAt: timestamp('updatedAt').notNull()
+				});
 
-export const account = sqliteTable("account", {
-  id: text("id").primaryKey(),
-  accountId: text("accountId").notNull(),
-  providerId: text("providerId").notNull(),
-  userId: text("userId")
-    .notNull()
-    .references(() => user.id),
-  accessToken: text("accessToken"),
-  refreshToken: text("refreshToken"),
-  idToken: text("idToken"),
-  accessTokenExpiresAt: integer("accessTokenExpiresAt", {
-    mode: "timestamp",
-  }),
-  refreshTokenExpiresAt: integer("refreshTokenExpiresAt", {
-    mode: "timestamp",
-  }),
-  scope: text("scope"),
-  password: text("password"),
-  createdAt: integer("createdAt", {
-    mode: "timestamp",
-  }).notNull(),
-  updatedAt: integer("updatedAt", {
-    mode: "timestamp",
-  }).notNull(),
-});
+export const verification = pgTable("verification", {
+					id: text("id").primaryKey(),
+					identifier: text('identifier').notNull(),
+ value: text('value').notNull(),
+ expiresAt: timestamp('expiresAt').notNull(),
+ createdAt: timestamp('createdAt'),
+ updatedAt: timestamp('updatedAt')
+				});
 
-export const verification = sqliteTable("verification", {
-  id: text("id").primaryKey(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: integer("expiresAt", {
-    mode: "timestamp",
-  }).notNull(),
-  createdAt: integer("createdAt", {
-    mode: "timestamp",
-  }),
-  updatedAt: integer("updatedAt", {
-    mode: "timestamp",
-  }),
-});
+export const passkey = pgTable("passkey", {
+					id: text("id").primaryKey(),
+					name: text('name'),
+ publicKey: text('publicKey').notNull(),
+ userId: text('userId').notNull().references(()=> user.id),
+ webauthnUserID: text('webauthnUserID').notNull(),
+ counter: integer('counter').notNull(),
+ deviceType: text('deviceType').notNull(),
+ backedUp: boolean('backedUp').notNull(),
+ transports: text('transports'),
+ createdAt: timestamp('createdAt')
+				});
