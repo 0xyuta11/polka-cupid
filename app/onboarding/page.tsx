@@ -16,18 +16,12 @@ import {
 import { PlusCircle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CoolMode } from "@/components/ui/cool-mode";
+import { useProfileStore } from "@/store/use-profile-store";
 
 interface Trait {
   emoji: string;
   label: string;
   category: "creativity" | "interests" | "sports" | "personality";
-}
-
-interface UserData {
-  age: string;
-  gender: string;
-  selectedTraits: Trait[];
-  wantedTraits: Trait[];
 }
 
 const creativityTraits: Trait[] = [
@@ -65,19 +59,26 @@ const personalityTraits: Trait[] = [
 export default function SelectTraitsPage() {
   const router = useRouter();
   const containerRef = useRef(null);
-  const [userData, setUserData] = useState<UserData>({
-    age: "23",
-    gender: "Female",
-    selectedTraits: [],
-    wantedTraits: [],
-  });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("what-you-are");
+  
+  // Use the store
+  const {
+    age,
+    gender,
+    selectedTraits,
+    wantedTraits,
+    setAge,
+    setGender,
+    setSelectedTraits,
+    setWantedTraits,
+  } = useProfileStore();
+
   const [newTrait, setNewTrait] = useState<Trait>({
     emoji: "😊",
     label: "",
     category: "creativity",
   });
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("what-you-are");
 
   useEffect(() => {
     gsap.fromTo(
@@ -96,30 +97,28 @@ export default function SelectTraitsPage() {
   }, []);
 
   const toggleTrait = (trait: Trait) => {
-    setUserData((prev) => {
-      const traitList =
-        activeTab === "what-you-are" ? "selectedTraits" : "wantedTraits";
-      const isSelected = prev[traitList].some((t) => t.label === trait.label);
-
+    if (activeTab === "what-you-are") {
+      const isSelected = selectedTraits.some((t) => t.label === trait.label);
       if (isSelected) {
-        return {
-          ...prev,
-          [traitList]: prev[traitList].filter((t) => t.label !== trait.label),
-        };
+        setSelectedTraits(selectedTraits.filter((t) => t.label !== trait.label));
       } else {
-        return {
-          ...prev,
-          [traitList]: [...prev[traitList], trait],
-        };
+        setSelectedTraits([...selectedTraits, trait]);
       }
-    });
+    } else {
+      const isWanted = wantedTraits.some((t) => t.label === trait.label);
+      if (isWanted) {
+        setWantedTraits(wantedTraits.filter((t) => t.label !== trait.label));
+      } else {
+        setWantedTraits([...wantedTraits, trait]);
+      }
+    }
   };
 
+  // Update TraitButton component
   const TraitButton = ({ emoji, label, category }: Trait) => {
     const buttonRef = useRef(null);
-    const traitList =
-      activeTab === "what-you-are" ? "selectedTraits" : "wantedTraits";
-    const isSelected = userData[traitList].some((t) => t.label === label);
+    const traitList = activeTab === "what-you-are" ? selectedTraits : wantedTraits;
+    const isSelected = traitList.some((t) => t.label === label);
 
     const handleClick = () => {
       gsap.to(buttonRef.current, {
@@ -147,32 +146,13 @@ export default function SelectTraitsPage() {
   };
 
   const handleSubmit = async () => {
+    // Save to database if needed
     router.push("/dashboard");
-    // try {
-    //   const response = await fetch("/api/traits", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(userData),
-    //   });
-
-    //   if (!response.ok) {
-    //     throw new Error("Failed to save traits");
-    //   }
-
-    //   console.log("Traits saved successfully!");
-    // } catch (error) {
-    //   console.error("Error saving traits:", error);
-    // }
   };
 
   const addCustomTrait = () => {
     if (newTrait.label.trim()) {
-      setUserData((prev) => ({
-        ...prev,
-        selectedTraits: [...prev.selectedTraits, newTrait],
-      }));
+      setSelectedTraits([...selectedTraits, newTrait]);
       setNewTrait({
         emoji: "😊",
         label: "",
@@ -263,7 +243,7 @@ export default function SelectTraitsPage() {
           <TraitButton key={trait.label} {...trait} />
         ))}
         {/* Add custom traits that match this category */}
-        {userData.selectedTraits
+        {selectedTraits
           .filter(
             (trait) =>
               trait.category === category &&
@@ -306,26 +286,16 @@ export default function SelectTraitsPage() {
                   <label className="text-sm text-zinc-500">Age:</label>
                   <Input
                     type="number"
-                    value={userData.age}
-                    onChange={(e) =>
-                      setUserData((prev) => ({
-                        ...prev,
-                        age: e.target.value,
-                      }))
-                    }
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
                   />
                 </div>
                 <div>
                   <label className="text-sm text-zinc-500">Gender:</label>
                   <select
                     className="w-full rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2"
-                    value={userData.gender}
-                    onChange={(e) =>
-                      setUserData((prev) => ({
-                        ...prev,
-                        gender: e.target.value,
-                      }))
-                    }
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -366,8 +336,8 @@ export default function SelectTraitsPage() {
 
           <div className="text-sm text-zinc-500 text-center">
             {activeTab === "what-you-are"
-              ? `Selected traits: ${userData.selectedTraits.length}`
-              : `Wanted traits: ${userData.wantedTraits.length}`}
+              ? `Selected traits: ${selectedTraits.length}`
+              : `Wanted traits: ${wantedTraits.length}`}
           </div>
         </div>
       </div>

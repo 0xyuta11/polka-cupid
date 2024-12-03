@@ -4,7 +4,14 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, AtSign, Github, Twitter, Instagram } from "lucide-react";
+import {
+  CheckCircle2,
+  AtSign,
+  Github,
+  Twitter,
+  Instagram,
+  Link as LinkIcon,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -13,121 +20,93 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-// import { useToast } from "@/components/ui/use-toast";
+import { useProfileStore } from "@/store/use-profile-store";
 import gsap from "gsap";
-import { updateProfile, getProfile, SocialAccount } from "../actions/profile";
 
-interface SocialHandle extends SocialAccount {
-  icon: React.ReactNode;
-  url: string;
-}
-interface PageProps {
-  params: {
-    userId: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-export default function ProfilePage({ params, searchParams }: PageProps){
-  // const { toast } = useToast();
-  const userId = params.userId;
+export default function ProfilePage() {
+  const {
+    name,
+    age,
+    gender,
+    selectedTraits,
+    wantedTraits,
+    socialHandles,
+    setName,
+    setAge,
+    setGender,
+    setSocialHandles,
+    setSelectedTraits,
+    setWantedTraits,
+  } = useProfileStore();
+
   const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState("");
-  const [socialHandles, setSocialHandles] = useState<SocialHandle[]>([
-    {
-      platform: "GitHub",
-      username: "",
-      isVerified: false,
-      icon: <Github className="w-4 h-4" />,
-      url: "https://github.com/",
-    },
-    {
-      platform: "Twitter",
-      username: "",
-      isVerified: false,
-      icon: <Twitter className="w-4 h-4" />,
-      url: "https://twitter.com/",
-    },
-    {
-      platform: "Instagram",
-      username: "",
-      isVerified: false,
-      icon: <Instagram className="w-4 h-4" />,
-      url: "https://instagram.com/",
-    },
+  const [editedData, setEditedData] = useState({
+    name,
+    age,
+    gender,
+    selectedTraits,
+    wantedTraits,
+    socialHandles,
+  });
+
+  // Reset edited data when toggling edit mode
+  useEffect(() => {
+    if (isEditing) {
+      setEditedData({
+        name,
+        age,
+        gender,
+        selectedTraits,
+        wantedTraits,
+        socialHandles,
+      });
+    }
+  }, [
+    isEditing,
+    name,
+    age,
+    gender,
+    selectedTraits,
+    wantedTraits,
+    socialHandles,
   ]);
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      const result = await getProfile(userId);
-      if (result.success && result.data) {
-        setName(result.data.user.name);
-        setSocialHandles((prev) =>
-          prev.map((handle) => {
-            const matchingHandle = result.data.socialHandles.find(
-              (h) => h.platform.toLowerCase() === handle.platform.toLowerCase()
-            );
-            return matchingHandle
-              ? { ...handle, ...matchingHandle }
-              : handle;
-          })
-        );
-      }
-    };
+  const handleSave = () => {
+    setName(editedData.name);
+    setAge(editedData.age);
+    setGender(editedData.gender);
+    setSelectedTraits(editedData.selectedTraits);
+    setWantedTraits(editedData.wantedTraits);
+    setSocialHandles(editedData.socialHandles);
+    setIsEditing(false);
+  };
 
-    loadProfile();
-  }, [userId]);
-
-  useEffect(() => {
-    gsap.fromTo(
-      ".profile-container",
-      {
-        y: 30,
-        opacity: 0,
-      },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 1,
-        ease: "power3.out",
-      }
-    );
-  }, []);
-
-  const handleSave = async () => {
-    const result = await updateProfile(
-      userId,
-      name,
-      socialHandles.map(({ platform, username, isVerified }) => ({
-        platform,
-        username,
-        isVerified,
-      }))
-    );
-
-    if (result.success) {
-      // toast({
-      //   title: "Success",
-      //   description: "Profile updated successfully",
-      // });
-      console.log("Profile updated successfully");
-      setIsEditing(false);
+  const removeTrait = (
+    trait: (typeof selectedTraits)[0],
+    type: "selected" | "wanted"
+  ) => {
+    if (type === "selected") {
+      setEditedData((prev) => ({
+        ...prev,
+        selectedTraits: prev.selectedTraits.filter(
+          (t) => t.label !== trait.label
+        ),
+      }));
     } else {
-      // toast({
-      //   title: "Error",
-      //   description: result.error || "Failed to update profile",
-      //   variant: "destructive",
-      // });
-      console.error("Failed to update profile:", result.error);
+      setEditedData((prev) => ({
+        ...prev,
+        wantedTraits: prev.wantedTraits.filter((t) => t.label !== trait.label),
+      }));
     }
   };
 
-  const verifyHandle = async (index: number) => {
-    const updatedHandles = [...socialHandles];
-    updatedHandles[index].isVerified = true;
-    setSocialHandles(updatedHandles);
-
-    // Save changes immediately when verifying
-    await handleSave();
+  const verifyHandle = (index: number) => {
+    const updatedHandles = [...editedData.socialHandles];
+    updatedHandles[index] = {
+      ...updatedHandles[index],
+      isVerified: true,
+    };
+    setEditedData((prev) => ({ ...prev, socialHandles: updatedHandles }));
   };
 
   return (
@@ -144,114 +123,223 @@ export default function ProfilePage({ params, searchParams }: PageProps){
                 <div className="flex items-center gap-2">
                   {isEditing ? (
                     <Input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      value={editedData.name}
+                      onChange={(e) =>
+                        setEditedData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                       className="max-w-[200px]"
+                      placeholder="Your name"
                     />
                   ) : (
-                    <h1 className="text-2xl font-bold">{name}</h1>
+                    <h1 className="text-2xl font-bold">
+                      {name || "Anonymous User"}
+                    </h1>
                   )}
-                  {socialHandles.some((handle) => handle.isVerified) && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Badge
-                            variant="secondary"
-                            className="bg-blue-500/10 text-blue-500"
-                          >
-                            <CheckCircle2 className="w-4 h-4 mr-1" />
-                            Verified
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>This profile has verified social handles</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                  {/* ... Verified badge ... */}
+                </div>
+                <div className="text-zinc-500 space-x-2">
+                  {isEditing ? (
+                    <>
+                      <Input
+                        type="number"
+                        value={editedData.age}
+                        onChange={(e) =>
+                          setEditedData((prev) => ({
+                            ...prev,
+                            age: e.target.value,
+                          }))
+                        }
+                        className="w-20 inline-block"
+                        placeholder="Age"
+                      />
+                      <select
+                        value={editedData.gender}
+                        onChange={(e) =>
+                          setEditedData((prev) => ({
+                            ...prev,
+                            gender: e.target.value,
+                          }))
+                        }
+                        className="ml-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-1"
+                      >
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Non-binary">Non-binary</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </>
+                  ) : (
+                    <>
+                      <span>{age} years old</span>
+                      <span>•</span>
+                      <span>{gender}</span>
+                    </>
                   )}
                 </div>
               </div>
             </div>
-            {isEditing ? (
-              <div className="space-x-2">
-                <Button variant="outline" onClick={() => setIsEditing(false)}>
-                  Cancel
+            <div className="space-x-2">
+              {isEditing ? (
+                <>
+                  <Button variant="outline" onClick={() => setIsEditing(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSave}>Save Changes</Button>
+                </>
+              ) : (
+                <Button variant="outline" onClick={() => setIsEditing(true)}>
+                  Edit Profile
                 </Button>
-                <Button onClick={handleSave}>Save</Button>
-              </div>
-            ) : (
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
-                Edit Profile
-              </Button>
-            )}
+              )}
+            </div>
           </div>
 
+          {/* Traits Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Selected Traits */}
+            <div className="bg-white dark:bg-zinc-950 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800">
+              <h2 className="text-xl font-semibold mb-4">My Traits</h2>
+              <div className="flex flex-wrap gap-2">
+                {(isEditing ? editedData.selectedTraits : selectedTraits).map(
+                  (trait) => (
+                    <Badge
+                      key={trait.label}
+                      variant="secondary"
+                      className="text-sm group"
+                    >
+                      <span className="mr-1">{trait.emoji}</span>
+                      {trait.label}
+                      {isEditing && (
+                        <button
+                          onClick={() => removeTrait(trait, "selected")}
+                          className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </Badge>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Wanted Traits */}
+            <div className="bg-white dark:bg-zinc-950 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800">
+              <h2 className="text-xl font-semibold mb-4">Looking For</h2>
+              <div className="flex flex-wrap gap-2">
+                {(isEditing ? editedData.wantedTraits : wantedTraits).map(
+                  (trait) => (
+                    <Badge
+                      key={trait.label}
+                      variant="secondary"
+                      className="text-sm group"
+                    >
+                      <span className="mr-1">{trait.emoji}</span>
+                      {trait.label}
+                      {isEditing && (
+                        <button
+                          onClick={() => removeTrait(trait, "wanted")}
+                          className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </Badge>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Social Handles Section */}
           <div className="space-y-6 bg-white dark:bg-zinc-950 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800">
             <h2 className="text-xl font-semibold">Social Handles</h2>
             <div className="space-y-4">
-              {socialHandles.map((handle, index) => (
-                <div key={handle.platform} className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
-                    {handle.icon}
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-sm text-zinc-500">
-                      {handle.platform}
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        placeholder={`Enter your ${handle.platform} username`}
-                        value={handle.username}
-                        onChange={(e) => {
-                          const updatedHandles = [...socialHandles];
-                          updatedHandles[index].username = e.target.value;
-                          setSocialHandles(updatedHandles);
-                        }}
-                        className="max-w-md"
-                      />
-                      {handle.isVerified ? (
-                        <Badge className="bg-green-500/10 text-green-500">
-                          <CheckCircle2 className="w-4 h-4 mr-1" />
-                          Verified
-                        </Badge>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => verifyHandle(index)}
-                          disabled={!handle.username}
-                        >
-                          Verify
-                        </Button>
+              {(isEditing ? editedData.socialHandles : socialHandles).map(
+                (handle, index) => (
+                  <div
+                    key={handle.platform}
+                    className="flex items-center gap-4"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
+                      {handle.platform === "GitHub" && (
+                        <Github className="w-4 h-4" />
+                      )}
+                      {handle.platform === "Twitter" && (
+                        <Twitter className="w-4 h-4" />
+                      )}
+                      {handle.platform === "Instagram" && (
+                        <Instagram className="w-4 h-4" />
                       )}
                     </div>
+                    <div className="flex-1">
+                      <label className="text-sm text-zinc-500">
+                        {handle.platform}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          placeholder={`Enter your ${handle.platform} username`}
+                          value={handle.username}
+                          onChange={(e) => {
+                            const updatedHandles = [
+                              ...editedData.socialHandles,
+                            ];
+                            updatedHandles[index] = {
+                              ...updatedHandles[index],
+                              username: e.target.value,
+                            };
+                            setEditedData((prev) => ({
+                              ...prev,
+                              socialHandles: updatedHandles,
+                            }));
+                          }}
+                          className="max-w-md"
+                          disabled={!isEditing}
+                        />
+                        {handle.isVerified ? (
+                          <Badge className="bg-green-500/10 text-green-500">
+                            <CheckCircle2 className="w-4 h-4 mr-1" />
+                            Verified
+                          </Badge>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => verifyHandle(index)}
+                            disabled={!handle.username || !isEditing}
+                          >
+                            Verify
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           </div>
 
-          {/* Additional Profile Sections */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Stats Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white dark:bg-zinc-950 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800">
-              <h2 className="text-xl font-semibold mb-4">About Me</h2>
-              <p className="text-zinc-500">
-                Frontend developer passionate about creating beautiful user
-                interfaces.
-              </p>
+              <h3 className="font-semibold text-zinc-500 mb-1">Total Traits</h3>
+              <p className="text-2xl font-bold">{selectedTraits.length}</p>
             </div>
             <div className="bg-white dark:bg-zinc-950 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800">
-              <h2 className="text-xl font-semibold mb-4">Stats</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-2xl font-bold">128</p>
-                  <p className="text-zinc-500">Connections</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">45</p>
-                  <p className="text-zinc-500">Matches</p>
-                </div>
-              </div>
+              <h3 className="font-semibold text-zinc-500 mb-1">Looking For</h3>
+              <p className="text-2xl font-bold">{wantedTraits.length}</p>
+            </div>
+            <div className="bg-white dark:bg-zinc-950 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800">
+              <h3 className="font-semibold text-zinc-500 mb-1">
+                Verified Handles
+              </h3>
+              <p className="text-2xl font-bold">
+                {socialHandles.filter((h) => h.isVerified).length}
+              </p>
             </div>
           </div>
         </div>

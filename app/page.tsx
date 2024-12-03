@@ -67,7 +67,7 @@ export default function Home() {
         </header>
         <div className="absolute flex flex-col items-center justify-center gap-8 z-10 bottom-24">
           <h1 className="hero-title mb-24 relative text-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl leading-tight px-4 font-displayRegular text-foreground">
-            DotBuddies
+            DOTBuddies
           </h1>
           <RainbowButton onClick={() => router.push("/login")}>
             Let&#39;s connect with friends
