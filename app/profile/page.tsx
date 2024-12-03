@@ -1,4 +1,4 @@
-// app/profile/page.tsx
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -21,9 +21,15 @@ interface SocialHandle extends SocialAccount {
   icon: React.ReactNode;
   url: string;
 }
-
-export default function ProfilePage({ userId }: { userId: string }) {
+interface PageProps {
+  params: {
+    userId: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+export default function ProfilePage({ params, searchParams }: PageProps){
   // const { toast } = useToast();
+  const userId = params.userId;
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState("");
   const [socialHandles, setSocialHandles] = useState<SocialHandle[]>([
