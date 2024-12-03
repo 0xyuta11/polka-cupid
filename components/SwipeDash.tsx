@@ -7,7 +7,7 @@ import NavBar from "@/components/Navbar";
 import SwipeCard, { SwipeCardHandle } from "@/components/SwipeCard";
 import { X, Heart } from "lucide-react";
 import { Profile, DUMMY_PROFILES } from "@/lib/dummy-data";
-
+import VerificationBadges from "@/components/Badges";
 // Helper functions
 function getRandomProfiles(count: number): Profile[] {
   return [...DUMMY_PROFILES].sort(() => 0.5 - Math.random()).slice(0, count);

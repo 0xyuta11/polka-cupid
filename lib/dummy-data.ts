@@ -7,6 +7,8 @@ export interface Profile {
     bio: string;
     profession: string;
     skills: string[];
+    twitterVerified?: boolean;  
+    telegramVerified?: boolean; 
   }
 
   //use these images
@@ -26,6 +28,8 @@ export const DUMMY_PROFILES: Profile[] = [
       bio: "Adventure seeker and coffee enthusiast. Love hiking and photography.",
       profession: "UX Designer",
       skills: ["Design", "Figma", "User Research", "Prototyping"],
+      twitterVerified: true,
+    telegramVerified: true,
   },
   {
     id: 2,
@@ -36,6 +40,8 @@ export const DUMMY_PROFILES: Profile[] = [
     bio: "Tech enthusiast and avid reader. Loves to code and learn new things.",
     profession: "Software Engineer",
     skills: ["JavaScript", "React", "Node.js", "Python"],
+    twitterVerified: true,
+    telegramVerified: true,
   },
   {
     id: 3,
@@ -46,6 +52,8 @@ export const DUMMY_PROFILES: Profile[] = [
     bio: "Travel lover and foodie. Always looking for the next adventure.",
     profession: "Marketing Manager",
     skills: ["Marketing", "Content Creation", "SEO", "Social Media"],
+    twitterVerified: true,
+    telegramVerified: true,
   },
   {
     id: 4,
@@ -56,6 +64,8 @@ export const DUMMY_PROFILES: Profile[] = [
     bio: "Foodie and fitness enthusiast. Loves to cook and workout.",
     profession: "Chef",
     skills: ["Cooking", "Fitness", "Nutrition", "Healthy Eating"],
+    twitterVerified: true,
+    telegramVerified: true,
   },
   {
     id: 5,
@@ -66,5 +76,7 @@ export const DUMMY_PROFILES: Profile[] = [
     bio: "Art lover and nature enthusiast. Always looking for inspiration.",
     profession: "Artist",
     skills: ["Painting", "Drawing", "Art History", "Creative Writing"],
+    twitterVerified: true,
+    telegramVerified: true,
   },
 ];
