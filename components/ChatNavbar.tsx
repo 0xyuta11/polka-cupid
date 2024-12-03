@@ -46,9 +46,7 @@ export default function NavBar() {
               }}
             >
               <MessageCircle className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-medium text-white flex items-center justify-center">
-                3
-              </span>
+              
             </Button>
 
             {/* Notifications Button */}

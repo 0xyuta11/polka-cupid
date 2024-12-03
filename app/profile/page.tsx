@@ -1,3 +1,4 @@
+// app/profile/page.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -12,18 +13,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+// import { useToast } from "@/components/ui/use-toast";
 import gsap from "gsap";
+import { updateProfile, getProfile, SocialAccount } from "../actions/profile";
 
-interface SocialHandle {
-  platform: string;
-  username: string;
-  isVerified: boolean;
+interface SocialHandle extends SocialAccount {
   icon: React.ReactNode;
   url: string;
 }
 
-export default function ProfilePage() {
-  const [isProfileVerified, setIsProfileVerified] = useState(false);
+export default function ProfilePage({ userId }: { userId: string }) {
+  // const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState("");
   const [socialHandles, setSocialHandles] = useState<SocialHandle[]>([
     {
       platform: "GitHub",
@@ -49,6 +51,27 @@ export default function ProfilePage() {
   ]);
 
   useEffect(() => {
+    const loadProfile = async () => {
+      const result = await getProfile(userId);
+      if (result.success && result.data) {
+        setName(result.data.user.name);
+        setSocialHandles((prev) =>
+          prev.map((handle) => {
+            const matchingHandle = result.data.socialHandles.find(
+              (h) => h.platform.toLowerCase() === handle.platform.toLowerCase()
+            );
+            return matchingHandle
+              ? { ...handle, ...matchingHandle }
+              : handle;
+          })
+        );
+      }
+    };
+
+    loadProfile();
+  }, [userId]);
+
+  useEffect(() => {
     gsap.fromTo(
       ".profile-container",
       {
@@ -64,16 +87,41 @@ export default function ProfilePage() {
     );
   }, []);
 
-  const verifyHandle = (index: number) => {
+  const handleSave = async () => {
+    const result = await updateProfile(
+      userId,
+      name,
+      socialHandles.map(({ platform, username, isVerified }) => ({
+        platform,
+        username,
+        isVerified,
+      }))
+    );
+
+    if (result.success) {
+      // toast({
+      //   title: "Success",
+      //   description: "Profile updated successfully",
+      // });
+      console.log("Profile updated successfully");
+      setIsEditing(false);
+    } else {
+      // toast({
+      //   title: "Error",
+      //   description: result.error || "Failed to update profile",
+      //   variant: "destructive",
+      // });
+      console.error("Failed to update profile:", result.error);
+    }
+  };
+
+  const verifyHandle = async (index: number) => {
     const updatedHandles = [...socialHandles];
     updatedHandles[index].isVerified = true;
     setSocialHandles(updatedHandles);
 
-    // Check if any handle is verified to update profile verification status
-    const hasVerifiedHandle = updatedHandles.some(
-      (handle) => handle.isVerified
-    );
-    setIsProfileVerified(hasVerifiedHandle);
+    // Save changes immediately when verifying
+    await handleSave();
   };
 
   return (
@@ -88,8 +136,16 @@ export default function ProfilePage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold">John Doe</h1>
-                  {isProfileVerified && (
+                  {isEditing ? (
+                    <Input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="max-w-[200px]"
+                    />
+                  ) : (
+                    <h1 className="text-2xl font-bold">{name}</h1>
+                  )}
+                  {socialHandles.some((handle) => handle.isVerified) && (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
@@ -108,13 +164,22 @@ export default function ProfilePage() {
                     </TooltipProvider>
                   )}
                 </div>
-                <p className="text-zinc-500">@johndoe</p>
               </div>
             </div>
-            <Button variant="outline">Edit Profile</Button>
+            {isEditing ? (
+              <div className="space-x-2">
+                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSave}>Save</Button>
+              </div>
+            ) : (
+              <Button variant="outline" onClick={() => setIsEditing(true)}>
+                Edit Profile
+              </Button>
+            )}
           </div>
 
-          {/* Social Handles Section */}
           <div className="space-y-6 bg-white dark:bg-zinc-950 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800">
             <h2 className="text-xl font-semibold">Social Handles</h2>
             <div className="space-y-4">
