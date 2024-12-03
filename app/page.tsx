@@ -67,7 +67,7 @@ export default function Home() {
         </header>
         <div className="absolute flex flex-col items-center justify-center gap-8 z-10 bottom-24">
           <h1 className="hero-title mb-24 relative text-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl leading-tight px-4 font-displayRegular text-foreground">
-            Polka Buddies
+            Dot Buddies
           </h1>
           <RainbowButton onClick={() => router.push("/login")}>
             Let&#39;s connect with friends
@@ -203,7 +203,7 @@ export default function Home() {
           <footer className="w-full bg-black">
             <div className="container mx-auto px-4 py-8">
               <p className="text-muted-foreground">
-                &copy; {new Date().getFullYear()} Polka Buddies. All rights
+                &copy; {new Date().getFullYear()} Dot Buddies. All rights
                 reserved.
               </p>
             </div>
