@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,8 @@ import {
   Twitter,
   Instagram,
   Link as LinkIcon,
+  Mail,
+  Send,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,6 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useProfileStore } from "@/store/use-profile-store";
+import { useSocialHandlesStore } from "@/store/use-social-handles-store";
 import gsap from "gsap";
 
 export default function ProfilePage() {
@@ -30,46 +32,49 @@ export default function ProfilePage() {
     gender,
     selectedTraits,
     wantedTraits,
-    socialHandles,
     setName,
     setAge,
     setGender,
-    setSocialHandles,
     setSelectedTraits,
     setWantedTraits,
   } = useProfileStore();
 
+  const { handles: socialHandles, setHandles: setSocialHandles } =
+    useSocialHandlesStore();
+
+  const [hydrated, setHydrated] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({
-    name,
-    age,
-    gender,
-    selectedTraits,
-    wantedTraits,
-    socialHandles,
+    name: name || "",
+    age: age || "",
+    gender: gender || "",
+    selectedTraits: selectedTraits || [],
+    wantedTraits: wantedTraits || [],
+    socialHandles: socialHandles || [],
   });
 
-  // Reset edited data when toggling edit mode
   useEffect(() => {
-    if (isEditing) {
-      setEditedData({
-        name,
-        age,
-        gender,
-        selectedTraits,
-        wantedTraits,
-        socialHandles,
-      });
-    }
-  }, [
-    isEditing,
-    name,
-    age,
-    gender,
-    selectedTraits,
-    wantedTraits,
-    socialHandles,
-  ]);
+    setHydrated(true);
+    setEditedData({
+      name: name || "",
+      age: age || "",
+      gender: gender || "",
+      selectedTraits: selectedTraits || [],
+      wantedTraits: wantedTraits || [],
+      socialHandles: socialHandles || [],
+    });
+  }, [name, age, gender, selectedTraits, wantedTraits, socialHandles]);
+
+  if (!hydrated) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center">
+        <div className="space-y-4">
+          <div className="w-24 h-24 rounded-full bg-zinc-100 animate-pulse" />
+          <div className="h-8 w-48 bg-zinc-100 rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
 
   const handleSave = () => {
     setName(editedData.name);
@@ -101,6 +106,8 @@ export default function ProfilePage() {
   };
 
   const verifyHandle = (index: number) => {
+    // redirect to https://socialkyc.io in new tab
+    window.open("https://socialkyc.io", "_blank");
     const updatedHandles = [...editedData.socialHandles];
     updatedHandles[index] = {
       ...updatedHandles[index],
@@ -108,6 +115,97 @@ export default function ProfilePage() {
     };
     setEditedData((prev) => ({ ...prev, socialHandles: updatedHandles }));
   };
+
+  const getSocialIcon = (platform: string) => {
+    switch (platform) {
+      case "GitHub":
+        return <Github className="w-4 h-4" />;
+      case "Twitter":
+        return <Twitter className="w-4 h-4" />;
+      case "Instagram":
+        return <Instagram className="w-4 h-4" />;
+      case "Email":
+        return <Mail className="w-4 h-4" />;
+      case "Telegram":
+        return <Send className="w-4 h-4" />;
+      default:
+        return <LinkIcon className="w-4 h-4" />;
+    }
+  };
+
+  const SocialHandlesSection = () => (
+    <div className="space-y-6 bg-white dark:bg-zinc-950 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Social Handles</h2>
+        {isEditing && (
+          <Badge variant="outline" className="text-xs">
+            Edit Mode
+          </Badge>
+        )}
+      </div>
+      <div className="space-y-4">
+        {(isEditing ? editedData.socialHandles : socialHandles).map(
+          (handle, index) => (
+            <div key={handle.platform} className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
+                {getSocialIcon(handle.platform)}
+              </div>
+              <div className="flex-1">
+                <label className="text-sm text-zinc-500">
+                  {handle.platform}
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder={`Enter your ${handle.platform.toLowerCase()}`}
+                    value={handle.username}
+                    onChange={(e) => {
+                      const updatedHandles = [...editedData.socialHandles];
+                      updatedHandles[index] = {
+                        ...updatedHandles[index],
+                        username: e.target.value,
+                      };
+                      setEditedData((prev) => ({
+                        ...prev,
+                        socialHandles: updatedHandles,
+                      }));
+                    }}
+                    className="max-w-md"
+                    disabled={!isEditing}
+                  />
+                  {handle.isVerified ? (
+                    <Badge className="bg-green-500/10 text-green-500">
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                      Verified
+                    </Badge>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => verifyHandle(index)}
+                      disabled={!handle.username || !isEditing}
+                    >
+                      Verify
+                    </Button>
+                  )}
+                  {handle.username && !isEditing && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        window.open(handle.url + handle.username, "_blank")
+                      }
+                    >
+                      <LinkIcon className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <ScrollArea className="h-screen w-screen">
@@ -256,72 +354,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Social Handles Section */}
-          <div className="space-y-6 bg-white dark:bg-zinc-950 rounded-xl p-6 border border-zinc-200 dark:border-zinc-800">
-            <h2 className="text-xl font-semibold">Social Handles</h2>
-            <div className="space-y-4">
-              {(isEditing ? editedData.socialHandles : socialHandles).map(
-                (handle, index) => (
-                  <div
-                    key={handle.platform}
-                    className="flex items-center gap-4"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
-                      {handle.platform === "GitHub" && (
-                        <Github className="w-4 h-4" />
-                      )}
-                      {handle.platform === "Twitter" && (
-                        <Twitter className="w-4 h-4" />
-                      )}
-                      {handle.platform === "Instagram" && (
-                        <Instagram className="w-4 h-4" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <label className="text-sm text-zinc-500">
-                        {handle.platform}
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder={`Enter your ${handle.platform} username`}
-                          value={handle.username}
-                          onChange={(e) => {
-                            const updatedHandles = [
-                              ...editedData.socialHandles,
-                            ];
-                            updatedHandles[index] = {
-                              ...updatedHandles[index],
-                              username: e.target.value,
-                            };
-                            setEditedData((prev) => ({
-                              ...prev,
-                              socialHandles: updatedHandles,
-                            }));
-                          }}
-                          className="max-w-md"
-                          disabled={!isEditing}
-                        />
-                        {handle.isVerified ? (
-                          <Badge className="bg-green-500/10 text-green-500">
-                            <CheckCircle2 className="w-4 h-4 mr-1" />
-                            Verified
-                          </Badge>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => verifyHandle(index)}
-                            disabled={!handle.username || !isEditing}
-                          >
-                            Verify
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
+          <SocialHandlesSection />
 
           {/* Stats Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

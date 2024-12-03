@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 interface SocialHandle {
   platform: string;
@@ -39,7 +39,26 @@ const initialState = {
   gender: "",
   selectedTraits: [],
   wantedTraits: [],
-  socialHandles: [],
+  socialHandles: [
+    {
+      platform: "Email",
+      username: "hi@vbhv.xyz",
+      isVerified: true,
+      url: "mailto:",
+    },
+    {
+      platform: "Twitter",
+      username: "0xVaibhav11",
+      isVerified: true,
+      url: "https://twitter.com/",
+    },
+    {
+      platform: "Telegram",
+      username: "0xVaibhav11",
+      isVerified: true,
+      url: "https://t.me/",
+    },
+  ],
 };
 
 export const useProfileStore = create<ProfileState>()(
@@ -56,6 +75,11 @@ export const useProfileStore = create<ProfileState>()(
     }),
     {
       name: "profile-storage",
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );
+
+if (typeof window !== "undefined") {
+  useProfileStore.persist.rehydrate();
+}
